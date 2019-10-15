@@ -6,7 +6,7 @@
     background-image: url("../../assests/image/b13.jpeg");
     background-size:cover;
   }
-  .exText{
+  .editorText{
     text-align: initial;
   
   }
@@ -28,10 +28,10 @@
     font-size: calc(10px + 2vmin);
     /* color: white; */
   }
-  .addbtn1{
+  .addParambtn{
     text-align:left; 
   }
-  .addbtn{
+  .addFeb{
     text-size-adjust: 10px;
   }
   .MuiButtonBase-root{
@@ -46,8 +46,7 @@
   }
   .form{
     display: inline-grid;
-    /* background-image: url(/src/image/b3.jpeg); */
-  }
+    }
   .inputs {
     margin: 5px 0;
     padding: 10px;
@@ -57,38 +56,20 @@
   display: flex;
   flex: column; 
   }
-  .span{
-    justify-content: inherit;
-    align-items: initial;
-  }
-  .small{
-    height: 50px;
-    background-color: limegreen;
-    box-shadow: inset -2px -3px 16px 0px grey;
-  
-  }
-  .small1{
+  .removeBtn{
     height: 30px;
     background-color:rgba(245, 28, 28, 0.89);
   }
-  /* .textarea{
-    background-image: url("image/b5.jpeg");
-    background-size:cover;
-  
-  } */
-  .btn{
-    box-shadow: inset -2px -3px 16px 0px black;
-  
+   .btn{
+    box-shadow: inset -2px -3px 16px 0px black;  
   }
-  .tex1{
+  .paramTex1{
     width: 200px;  
-    /* border: 1px solid grey; */
   }
-  .tex2{
+  .paramTex2{
     width: 350px;
-    /* border: 1px solid grey;  */
   } 
-  /* .shareholder{
-    border: 1px solid grey;
+  .addbtn{
+    text-align:left;     
+  }
   
-  } */

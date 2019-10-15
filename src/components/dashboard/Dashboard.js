@@ -1,20 +1,12 @@
 import React, { Component } from 'react'
-import { stat } from 'fs';
 import CKEditor from 'ckeditor4-react';
-import PropTypes from 'prop-types';
 import './dashboard.css';
 import TextareaAutosize from '@material-ui/core/TextareaAutosize';
-import { makeStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import SaveIcon from '@material-ui/icons/Save';
 import Button from '@material-ui/core/Button';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
-import Link from '@material-ui/core/Link';
-import Grid from '@material-ui/core/Grid';
-import { API } from '../../utils';
-
-
 class DashBoard extends Component {
 	constructor(props) {
 		super(props);
@@ -29,53 +21,48 @@ class DashBoard extends Component {
 			'formIsValid': true,
 			'params': [],
 		}
-
 	}
-	onEditorChange = (evt) => {
+	onExampleEditorChange = (evt) => {
 		this.setState({
 			example: evt.editor.getData()
 		});
 	}
-	onEditorChangeOutput = (evt) => {
+	onOutputEditorChange = (evt) => {
 		this.setState({
 			output: evt.editor.getData()
 		});
 	}
-
 	handleChange(changeEvent) {
 		this.setState({
 			data: changeEvent.target.value
 		});
 	}
-	handleShareholderNameChange = idx => evt => {
-		const newShareholders = this.state.params.map((shareholder, sidx) => {
-			if (idx !== sidx) return shareholder;
-			return { ...shareholder, name1: evt.target.value };
+	handleAddTextfield1 = index => evt => {
+		const newparams = this.state.params.map((keys, textIndex) => {
+			if (index !== textIndex)
+				return keys;
+			return { ...keys, name1: evt.target.value };
 		});
-
-		this.setState({ params: newShareholders });
+		this.setState({ params: newparams });
 	};
-	handleShareholderName2Change = idx => evt => {
-		const newShareholders = this.state.params.map((shareholder, sidx) => {
-			if (idx !== sidx) return shareholder;
-			return { ...shareholder, name2: evt.target.value };
+	handleAddTextfield2 = index => evt => {
+		const newparams = this.state.params.map((keys, textIndex) => {
+			if (index !== textIndex)
+				return keys;
+			return { ...keys, name2: evt.target.value };
 		});
-
-		this.setState({ params: newShareholders });
+		this.setState({ params: newparams });
 	};
-
-	handleAddShareholder = () => {
+	AddTextfield = () => {
 		this.setState({
 			params: this.state.params.concat([{ name1: "" }])
 		});
 	};
-
-	handleRemoveShareholder = idx => () => {
+	RemoveTextfield = idx => () => {
 		this.setState({
 			params: this.state.params.filter((s, sidx) => idx !== sidx)
 		});
 	};
-
 	handleValidation = (event) => {
 		event.preventDefault();
 		const functionName = this.state.functionName;
@@ -87,7 +74,7 @@ class DashBoard extends Component {
 		let errorMsg = '';
 		let formIsValid = true;
 
-		if (functionName == '') {
+		if (functionName === '') {
 			formIsValid = false;
 			errorMsg = " Function Name Cannot be empty";
 		} else if (tags === '') {
@@ -109,37 +96,28 @@ class DashBoard extends Component {
 			formIsValid = true;
 			errorMsg = "";
 		}
-		this.setState({ 'errorMsg': errorMsg, 'formIsValid': false }, () => {
+		this.setState({ 'errorMsg': errorMsg, 'formIsValid': formIsValid }, () => {
 			this.submitHanlder();
 		});
-
-
 	}
-
-
-
 	onChangeHandle = (event) => {
 		this.setState({ [event.target.name]: event.target.value })
 	}
 	submitHanlder = () => {
 		const { formIsValid, errorMsg } = this.state;
-		console.log('checked::::::', this.state);
 		if (formIsValid) {
 			try {
+				alert("Form save successfully.");
+			} catch (ex) {
 
-			}catch(ex) {
-				
 			}
 		} else {
 			alert("Form has errors." + errorMsg);
 
 		}
 	}
-
 	render() {
 		console.log('props:::::::', this.state);
-		console.log('props data:::::::', this.state.data);
-
 		return (
 			<div className="App">
 				<form className="form"  >
@@ -156,9 +134,6 @@ class DashBoard extends Component {
 						autoComplete="functionName"
 						autoFocus
 					/>
-					{/* <p item xs>              
-               Multiple Keys separated by comma (,)
-                 </p>             */}
 					<TextField required
 						label="Tags and Multiple Tags separated by comma (,)"
 						onChange={this.onChangeHandle}
@@ -169,14 +144,11 @@ class DashBoard extends Component {
 						name="tags"
 					/>
 					<TextareaAutosize
-						className="textarea"
 						onChange={this.onChangeHandle}
 						rows={7}
 						rowsMax={7}
-						// aria-label="maximum height"
 						label="Definition"
 						placeholder=" DEFINITION=  The join() method returns the array as a string."
-						// variant="outlined"
 						defaultValue=""
 						name="definition"
 					/>
@@ -189,78 +161,66 @@ class DashBoard extends Component {
 						variant="outlined"
 						name="syntax"
 					/>
-					{/* <button
-            type="button"
-            onClick={this.handleAddShareholder}
-            className="small"
-          > Add parameters
-           </button><br></br> */}
-
-
-					<span className='addbtn1'>
+					<span className='addbtn'>
 						<Fab
 							color="primary"
 							aria-label="add"
-							onClick={this.handleAddShareholder}
-							className="addbtn1"
+							onClick={this.AddTextfield}
+							className="addFeb"
 						>
 							<AddIcon />
 						</Fab>
-						<span className='addbtn'> <b> Add parameters  </b>
+						<span className='addParambtn'>
+							<b> Add parameters  </b>
 						</span>
 					</span>
-
-
-					{this.state.params.map((shareholder, idx) => (
-						<div className="shareholder">
-							<TextField className="tex1"
-								placeholder={`Arguments #${idx + 1}`}
-								value={shareholder.name1}
-								onChange={this.handleShareholderNameChange(idx)}
+					{this.state.params.map((element, index) => (
+						<div className="params">
+							<TextField className="paramTex1"
+								placeholder={`Arguments #${index + 1}`}
+								value={element.name1}
+								onChange={this.handleAddTextfield1(index)}
 							/>
-							<TextField className="tex2"
-								placeholder={`Discription #${idx + 1}`}
-								value={shareholder.name2}
-								onChange={this.handleShareholderName2Change(idx)}
+							<TextField className="paramTex2"
+								placeholder={`Discription #${index + 1}`}
+								value={element.name2}
+								onChange={this.handleAddTextfield2(index)}
 							/>
 							<button
 								type="button"
-								onClick={this.handleRemoveShareholder(idx)}
-								className="small1"
+								onClick={this.RemoveTextfield(index)}
+								className="removeBtn"
 							>
-								-
+								X
 							</button>
 						</div>
 					))}<br />
-					<span className='exText'><b> Example </b></span><CKEditor
-						// data={this.state.data}
-						onChange={this.onEditorChange} ></CKEditor>
+					<span className='editorText'>
+						<b> Example </b>
+					</span>
+					<CKEditor
+						onChange={this.onExampleEditorChange} />
 					<br />
-					<span className='exText'>
+					<span className='editorText'>
 						<b> Output </b>
 					</span>
-					<CKEditor onChange={this.onEditorChangeOutput} />
-
-
-					< Button
+					<CKEditor
+						onChange={this.onOutputEditorChange}
+					/>
+					<Button
 						className="btn"
 						variant="contained"
 						onClick={this.handleValidation}
 						size="large"
 						color="primary"
-						startIcon={<SaveIcon />}>
+						startIcon={<SaveIcon />}
+					>
 						Save
-          </Button>
+         			</Button>
 				</form>
-
-
-
-
 			</div>
 		)
 	}
 }
-
-
 export default DashBoard;
 
