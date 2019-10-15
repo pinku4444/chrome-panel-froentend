@@ -103,7 +103,7 @@ class DashBoard extends Component {
 	onChangeHandle = (event) => {
 		this.setState({ [event.target.name]: event.target.value })
 	}
-	submitHanlder = () => {
+	submitHanlder = async () => {
 		const { formIsValid, errorMsg } = this.state;
 		if (formIsValid) {
 			try {

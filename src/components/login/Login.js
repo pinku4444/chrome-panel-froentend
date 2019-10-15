@@ -8,6 +8,7 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import { API } from '../../utils';
+import './login.css';
 
 
 
@@ -39,6 +40,9 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function Login(props) {
+	if(localStorage.getItem("authToken")) {
+		props.history.push('/dashboard')
+	}
 	const classes = useStyles(props);
 	const [formData, setFormData] = useState({
 		'email': '',
@@ -53,9 +57,21 @@ export default function Login(props) {
 	}, [error])
 
 
-	const formSubmitHandler = (evt) => {
+	const formSubmitHandler = async (evt) => {
 		evt.preventDefault();
+		const data = {...formData};
 		try {
+			const response = await API.post('/api/user/login',data);
+			console.log('response: ', response);
+			if(response.data.status === "failed") {
+				localStorage.removeItem("authToken");
+				setIsError(true);
+				setError(response.data.message);
+			}else {
+				localStorage.setItem("authToken",response.data.token);
+				props.history.push('/dashboard')
+			}
+
 
 		}catch(ex) {
 			
@@ -78,7 +94,7 @@ export default function Login(props) {
 				<Typography component="h1" variant="h5">
 					Sign in
         		</Typography>
-				{isError ? (<h4>{error}</h4>) : null}
+				{isError ? (<h4 className="error">{error}</h4>) : null}
 				<form onSubmit={formSubmitHandler}>
 					<TextField
 						onChange={onChangeHandler}
