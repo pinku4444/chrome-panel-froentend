@@ -7,6 +7,7 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
+import * as yup from 'yup';
 import { API } from '../../utils';
 import './login.css';
 
@@ -40,14 +41,28 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function Login(props) {
+
+	// checking user is logged in or not
 	if(localStorage.getItem("authToken")) {
 		props.history.push('/dashboard')
 	}
+
+	let schema = yup.object().shape({
+		email : yup.string().email('please enter valid email').required(),
+		password : yup.string().required("password is required").min(2, 'Please enter no more than 2 characters'),
+
+	});
+
 	const classes = useStyles(props);
 	const [formData, setFormData] = useState({
 		'email': '',
 		'password': ''
 	});
+	const [isEmailError,setIsEmailError] = useState(false);
+	const [emailError,seEmailError] = useState('');
+
+	const [isPasswordError,setIsPasswordError] = useState(false);
+	const [passwordError,sePasswordError] = useState('');
 
 	const [isError,setIsError] = useState(false);
 	const [error,setError] = useState('');
@@ -61,8 +76,10 @@ export default function Login(props) {
 		evt.preventDefault();
 		const data = {...formData};
 		try {
-			const response = await API.post('/api/user/login',data);
-			console.log('response: ', response);
+			const loginData = await schema.validate(data,{abortEarly:false,stripUnknown:true});
+			setIsEmailError(false);
+			setIsPasswordError(false);
+			const response = await API.post('/api/user/login',loginData);
 			if(response.data.status === "failed") {
 				localStorage.removeItem("authToken");
 				setIsError(true);
@@ -73,7 +90,23 @@ export default function Login(props) {
 			}
 
 
-		}catch(ex) {
+		}catch(ValidationError) {
+			setIsEmailError(false);
+			setIsPasswordError(false);
+			if(ValidationError.inner !== undefined) {
+				const errors = ValidationError.inner;
+				errors.map((error) => {
+					if(error.path === "email") {
+						setIsEmailError(true);
+						seEmailError(error.message)
+						
+					}else if(error.path === "password") {
+						setIsPasswordError(true)
+						sePasswordError(error.message);
+					}
+
+				})
+			}
 			
 		}
 		
@@ -109,6 +142,7 @@ export default function Login(props) {
 						autoComplete="email"
 						autoFocus
 					/>
+					{isEmailError ? <span className="error">{emailError}</span> : null}
 					<TextField
 						onChange={onChangeHandler}
 						variant="outlined"
@@ -122,6 +156,7 @@ export default function Login(props) {
 						id="password"
 						autoComplete="current-password"
 					/>
+					{isPasswordError ? <span className="error">{passwordError}</span> : null}
 					<Button
 						type="submit"
 						fullWidth
