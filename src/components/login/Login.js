@@ -80,7 +80,7 @@ export default function Login(props) {
 			setIsEmailError(false);
 			setIsPasswordError(false);
 			const response = await API.post('/api/user/login',loginData);
-			if(response.data.status === "failed") {
+			if(response.data.code === 401) {
 				localStorage.removeItem("authToken");
 				setIsError(true);
 				setError(response.data.message);

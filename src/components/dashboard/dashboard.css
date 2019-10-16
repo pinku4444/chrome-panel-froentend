@@ -3,7 +3,6 @@
     
   }
   div#root{
-    background-image: url("../../assests/image/b13.jpeg");
     background-size:cover;
   }
   .editorText{
@@ -16,6 +15,16 @@
   
   .App-logo {
     height: 40vmin;
+  }
+  h4{
+    margin: 0px;
+  }
+  .errorMsg {
+    color: red;
+
+  }
+  Paper {
+    padding: 10px;;
   }
   
   .App-header {
@@ -30,6 +39,7 @@
   }
   .addParambtn{
     text-align:left; 
+    margin-left: 10px;
   }
   .addFeb{
     text-size-adjust: 10px;
@@ -70,6 +80,6 @@
     width: 350px;
   } 
   .addbtn{
-    text-align:left;     
+    text-align:left; 
   }
   
