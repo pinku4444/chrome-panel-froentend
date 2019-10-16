@@ -7,6 +7,11 @@ import SaveIcon from '@material-ui/icons/Save';
 import Button from '@material-ui/core/Button';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
+import { API } from '../../utils';
+
+
+
+
 class DashBoard extends Component {
 	constructor(props) {
 		super(props);
@@ -41,7 +46,7 @@ class DashBoard extends Component {
 		const newparams = this.state.params.map((keys, textIndex) => {
 			if (index !== textIndex)
 				return keys;
-			return { ...keys, name1: evt.target.value };
+			return { ...keys, argument: evt.target.value };
 		});
 		this.setState({ params: newparams });
 	};
@@ -49,15 +54,16 @@ class DashBoard extends Component {
 		const newparams = this.state.params.map((keys, textIndex) => {
 			if (index !== textIndex)
 				return keys;
-			return { ...keys, name2: evt.target.value };
+			return { ...keys, desc: evt.target.value };
 		});
 		this.setState({ params: newparams });
 	};
 	AddTextfield = () => {
 		this.setState({
-			params: this.state.params.concat([{ name1: "" }])
+			params: this.state.params.concat([{ argument: "" }])
 		});
 	};
+	
 	RemoveTextfield = idx => () => {
 		this.setState({
 			params: this.state.params.filter((s, sidx) => idx !== sidx)
@@ -106,8 +112,39 @@ class DashBoard extends Component {
 	submitHanlder = async () => {
 		const { formIsValid, errorMsg } = this.state;
 		if (formIsValid) {
+			let keywords = this.state.tags.split(',')
+			let headers = {
+				'Content-Type': 'application/json',
+				'authorization': localStorage.getItem('authToken')
+			}
+			let postBody = {
+				'functionName': this.state.functionName,
+				'keyword': keywords,
+				'definition': this.state.definition,
+				'syntax': this.state.syntax,
+				'example': this.state.example,
+				'output': this.state.output,
+				'param': this.state.params,
+			}
 			try {
-				alert("Form save successfully.");
+				const response = await API.post('/api/user/post', postBody, { 'headers': headers });
+				console.log('response', response);
+				if (response.data.message === 'Function Already exist') {
+					alert('Function already exists');
+				} else {
+					this.setState({
+						'functionName': '',
+						'tags': '',
+						'definition': '',
+						'syntax': '',
+						'example': '',
+						'output': '',
+						'errorMsg': '',
+						'formIsValid': true,
+						'params': [],
+					});
+					alert('Function submitted');
+				}
 			} catch (ex) {
 
 			}
@@ -126,36 +163,44 @@ class DashBoard extends Component {
 						onChange={this.onChangeHandle}
 						label="Function Name"
 						placeholder="array.join()"
-						defaultValue=""
 						margin="normal"
 						variant="outlined"
 						name="functionName"
 						id="functionName"
 						autoComplete="functionName"
 						autoFocus
+						value={this.state.functionName}
 					/>
 					<TextField required
 						label="Tags and Multiple Tags separated by comma (,)"
 						onChange={this.onChangeHandle}
 						placeholder="join"
-						defaultValue=""
-						margin="normal"
+						value={this.state.tags}
+						margin="dense"
 						variant="outlined"
 						name="tags"
+						id="mui-theme-provider-outlined-input"
+						className='margin'
+
+
 					/>
+             
+
+
+
 					<TextareaAutosize
 						onChange={this.onChangeHandle}
 						rows={7}
 						rowsMax={7}
 						label="Definition"
 						placeholder=" DEFINITION=  The join() method returns the array as a string."
-						defaultValue=""
+						value={this.state.definition}
 						name="definition"
 					/>
 					<TextField required
 						onChange={this.onChangeHandle}
 						label="Syntax"
-						defaultValue=""
+						value={this.state.syntax}
 						placeholder="array.join(separator)"
 						margin="normal"
 						variant="outlined"
@@ -178,12 +223,12 @@ class DashBoard extends Component {
 						<div className="params">
 							<TextField className="paramTex1"
 								placeholder={`Arguments #${index + 1}`}
-								value={element.name1}
+								value={element.argument}
 								onChange={this.handleAddTextfield1(index)}
 							/>
 							<TextField className="paramTex2"
 								placeholder={`Discription #${index + 1}`}
-								value={element.name2}
+								value={element.desc}
 								onChange={this.handleAddTextfield2(index)}
 							/>
 							<button
@@ -200,12 +245,14 @@ class DashBoard extends Component {
 					</span>
 					<CKEditor
 						onChange={this.onExampleEditorChange} />
+						value={this.state.example}
 					<br />
 					<span className='editorText'>
 						<b> Output </b>
 					</span>
 					<CKEditor
 						onChange={this.onOutputEditorChange}
+						value={this.state.output}
 					/>
 					<Button
 						className="btn"
