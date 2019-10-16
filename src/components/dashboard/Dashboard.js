@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component, Fragment } from 'react'
 import CKEditor from 'ckeditor4-react';
 import './dashboard.css';
 import TextareaAutosize from '@material-ui/core/TextareaAutosize';
@@ -12,6 +12,7 @@ import * as yup from 'yup';
 import Grid from '@material-ui/core/Grid';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Header from '../header';
 
 
 
@@ -153,7 +154,7 @@ class DashBoard extends Component {
 			'example': this.state.example,
 			'output': this.state.output,
 			'param': this.state.params,
-			'type' : "custom"
+			'type': "custom"
 		}
 		try {
 			const response = await API.post('/api/user/post', postBody);
@@ -185,132 +186,135 @@ class DashBoard extends Component {
 			syntaxError, outputError,
 			exampleError } = this.state.errors;
 		return (
-			<Grid container spacing={3}>
-				<Grid item xs={12} md={3}>
-				</Grid>
-				<Grid item xs={12} md={6}>
-					<div>
-						<form className="form"  >
-							<TextField
-								required="true"
-								onChange={this.onChangeHandle}
-								label="Function Name"
-								placeholder="array.join()"
-								margin="normal"
-								variant="outlined"
-								name="functionName"
-								id="functionName"
-								autoComplete="functionName"
-								autoFocus
-								value={this.state.functionName}
-							/>
-							{functionNameError !== '' ? (<h4 className="errorMsg">{functionNameError}</h4>) : null}
-							<TextField required
-								label="Tags"
-								onChange={this.onChangeHandle}
-								placeholder="Tags separated by comma for example : join,array"
-								value={this.state.tags}
-								margin="dense"
-								variant="outlined"
-								name="tags"
-								id="mui-theme-provider-outlined-input"
-								className='margin'
-							/>
-							{tagsError !== '' ? (<h4 className="errorMsg">{tagsError}</h4>) : null}
+			<Fragment>
+				<Header />
+				<Grid container spacing={3}>
+					<Grid item xs={12} md={3}>
+					</Grid>
+					<Grid item xs={12} md={6}>
+						<div>
+							<form className="form"  >
+								<TextField
+									required="true"
+									onChange={this.onChangeHandle}
+									label="Function Name"
+									placeholder="array.join()"
+									margin="normal"
+									variant="outlined"
+									name="functionName"
+									id="functionName"
+									autoComplete="functionName"
+									autoFocus
+									value={this.state.functionName}
+								/>
+								{functionNameError !== '' ? (<h4 className="errorMsg">{functionNameError}</h4>) : null}
+								<TextField required
+									label="Tags"
+									onChange={this.onChangeHandle}
+									placeholder="Tags separated by comma for example : join,array"
+									value={this.state.tags}
+									margin="dense"
+									variant="outlined"
+									name="tags"
+									id="mui-theme-provider-outlined-input"
+									className='margin'
+								/>
+								{tagsError !== '' ? (<h4 className="errorMsg">{tagsError}</h4>) : null}
 
-							<TextField
-								onChange={this.onChangeHandle}
-								rows={7}
-								rowsMax={7}
-								label="Definition"
-								variant="outlined"
-								placeholder=" DEFINITION=  The join() method returns the array as a string."
-								value={this.state.definition}
-								margin="normal"
-								name="definition"
-							/>
-							{definitionError !== '' ? (<h4 className="errorMsg">{definitionError}</h4>) : null}
-							<TextField required
-								onChange={this.onChangeHandle}
-								label="Syntax"
-								value={this.state.syntax}
-								placeholder="array.join(separator)"
-								margin="normal"
-								variant="outlined"
-								name="syntax"
-							/>
-							{syntaxError !== '' ? (<h4 className="errorMsg">{syntaxError}</h4>) : null}
-							<span className='addbtn'>
-								<Fab
-									color="primary"
-									aria-label="add"
-									size="small"
-									onClick={this.AddTextfield}
-									className="addFeb"
-								>
-									<AddIcon />
-								</Fab>
-								<span className='addParambtn'>
-									<b> Add parameters  </b>
-								</span>
-							</span>
-							{this.state.params.map((element, index) => (
-								<div className="params">
-									<TextField className="paramTex1"
-										placeholder={`Arguments #${index + 1}`}
-										value={element.argument}
-										onChange={this.handleAddTextfield1(index)}
-									/>
-									<TextField className="paramTex2"
-										placeholder={`Discription #${index + 1}`}
-										value={element.desc}
-										onChange={this.handleAddTextfield2(index)}
-									/>
-									<button
-										type="button"
-										onClick={this.RemoveTextfield(index)}
-										className="removeBtn"
+								<TextField
+									onChange={this.onChangeHandle}
+									rows={7}
+									rowsMax={7}
+									label="Definition"
+									variant="outlined"
+									placeholder=" DEFINITION=  The join() method returns the array as a string."
+									value={this.state.definition}
+									margin="normal"
+									name="definition"
+								/>
+								{definitionError !== '' ? (<h4 className="errorMsg">{definitionError}</h4>) : null}
+								<TextField required
+									onChange={this.onChangeHandle}
+									label="Syntax"
+									value={this.state.syntax}
+									placeholder="array.join(separator)"
+									margin="normal"
+									variant="outlined"
+									name="syntax"
+								/>
+								{syntaxError !== '' ? (<h4 className="errorMsg">{syntaxError}</h4>) : null}
+								<span className='addbtn'>
+									<Fab
+										color="primary"
+										aria-label="add"
+										size="small"
+										onClick={this.AddTextfield}
+										className="addFeb"
 									>
-										X
+										<AddIcon />
+									</Fab>
+									<span className='addParambtn'>
+										<b> Add parameters  </b>
+									</span>
+								</span>
+								{this.state.params.map((element, index) => (
+									<div className="params">
+										<TextField className="paramTex1"
+											placeholder={`Arguments #${index + 1}`}
+											value={element.argument}
+											onChange={this.handleAddTextfield1(index)}
+										/>
+										<TextField className="paramTex2"
+											placeholder={`Discription #${index + 1}`}
+											value={element.desc}
+											onChange={this.handleAddTextfield2(index)}
+										/>
+										<button
+											type="button"
+											onClick={this.RemoveTextfield(index)}
+											className="removeBtn"
+										>
+											X
 							</button>
-								</div>
-							))}<br />
-							<span className='editorText'>
-								<b> Example </b>
-							</span>
-							<CKEditor
-								onChange={this.onExampleEditorChange} />
-							{exampleError !== '' ? (<h4 className="errorMsg">{exampleError}</h4>) : null}
+									</div>
+								))}<br />
+								<span className='editorText'>
+									<b> Example </b>
+								</span>
+								<CKEditor
+									onChange={this.onExampleEditorChange} />
+								{exampleError !== '' ? (<h4 className="errorMsg">{exampleError}</h4>) : null}
 
-							<br />
-							<span className='editorText'>
-								<b> Output </b>
-							</span>
-							<CKEditor
-								onChange={this.onOutputEditorChange}
+								<br />
+								<span className='editorText'>
+									<b> Output </b>
+								</span>
+								<CKEditor
+									onChange={this.onOutputEditorChange}
 
-							/>
-							{outputError !== '' ? (<h4 className="errorMsg">{outputError}</h4>) : null}
-							<Button
-								className="btn"
-								variant="contained"
-								onClick={this.handleValidation}
-								size="large"
-								color="primary"
-								startIcon={<SaveIcon />}
-							>
-								Save
+								/>
+								{outputError !== '' ? (<h4 className="errorMsg">{outputError}</h4>) : null}
+								<Button
+									className="btn"
+									variant="contained"
+									onClick={this.handleValidation}
+									size="large"
+									color="primary"
+									startIcon={<SaveIcon />}
+								>
+									Save
          					</Button>
-						</form>
-						<ToastContainer />
-					</div>
+							</form>
+							<ToastContainer />
+						</div>
+
+					</Grid>
+					<Grid item xs={12} md={3}>
+					</Grid>
+
 
 				</Grid>
-				<Grid item xs={12} md={3}>
-				</Grid>
-
-
-			</Grid>
+			</Fragment>
 
 
 		)
