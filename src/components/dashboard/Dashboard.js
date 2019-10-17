@@ -300,7 +300,10 @@ class DashBoard extends Component {
                 <span className="editorText">
                   <b> Example </b>
                 </span>
-                <CKEditor onChange={this.onExampleEditorChange} />
+                <CKEditor
+                  onChange={this.onExampleEditorChange}
+                  data={this.state.example}
+                />
                 {exampleError !== "" ? (
                   <h4 className="errorMsg">{exampleError}</h4>
                 ) : null}
@@ -309,7 +312,10 @@ class DashBoard extends Component {
                 <span className="editorText">
                   <b> Output </b>
                 </span>
-                <CKEditor onChange={this.onOutputEditorChange} />
+                <CKEditor
+                  onChange={this.onOutputEditorChange}
+                  data={this.state.output}
+                />
                 {outputError !== "" ? (
                   <h4 className="errorMsg">{outputError}</h4>
                 ) : null}
