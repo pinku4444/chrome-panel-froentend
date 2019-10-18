@@ -4,6 +4,7 @@
   }
   div#root{
     background-size:cover;
+    /* background-image: url(/src/assests/image/b13.jpeg); */
   }
   .editorText{
     text-align: initial;
@@ -68,7 +69,7 @@
   }
   .removeBtn{
     height: 30px;
-    background-color:rgba(245, 28, 28, 0.89);
+    background-color:cornsilk;
   }
    .btn{
     box-shadow: inset -2px -3px 16px 0px black;  
@@ -82,4 +83,15 @@
   .addbtn{
     text-align:left; 
   }
-  
+  .typebtn{
+    display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+  }
+  /* .MuiFormControl-root{
+    display: inline-flex;
+    position: relative;
+    margin-top: 2px;
+
+  }
+   */

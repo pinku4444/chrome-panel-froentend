@@ -1,7 +1,6 @@
 import React, { Component, Fragment } from 'react'
 import CKEditor from 'ckeditor4-react';
 import './dashboard.css';
-import TextareaAutosize from '@material-ui/core/TextareaAutosize';
 import TextField from '@material-ui/core/TextField';
 import SaveIcon from '@material-ui/icons/Save';
 import Button from '@material-ui/core/Button';
@@ -13,10 +12,11 @@ import Grid from '@material-ui/core/Grid';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Header from '../header';
-
-
-
-import { tsConstructSignatureDeclaration } from '@babel/types';
+import FormControl from '@material-ui/core/FormControl';
+import FormLabel from '@material-ui/core/FormLabel';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Radio from '@material-ui/core/Radio';
+import RadioGroup from '@material-ui/core/RadioGroup';
 
 class DashBoard extends Component {
 	constructor(props) {
@@ -28,9 +28,7 @@ class DashBoard extends Component {
 			syntax: yup.string().required("Syntax is required"),
 			example: yup.string().required("example is required"),
 			output: yup.string().required("output is required")
-
 		});
-
 		this.state = {
 			'functionName': '',
 			'tags': '',
@@ -48,36 +46,14 @@ class DashBoard extends Component {
 				'outputError': ''
 			},
 			'params': [],
+			'functionType': 'Predefined'
 		}
 	}
-	onExampleEditorChange = (evt) => {
-		this.setState({
-			example: evt.editor.getData()
-		});
-	}
-	onOutputEditorChange = (evt) => {
-		this.setState({
-			output: evt.editor.getData()
-		});
-	}
-	handleChange(changeEvent) {
-		this.setState({
-			data: changeEvent.target.value
-		});
-	}
-	handleAddTextfield1 = index => evt => {
+	handleAddTextfield = index => evt => {
 		const newparams = this.state.params.map((keys, textIndex) => {
 			if (index !== textIndex)
 				return keys;
-			return { ...keys, argument: evt.target.value };
-		});
-		this.setState({ params: newparams });
-	};
-	handleAddTextfield2 = index => evt => {
-		const newparams = this.state.params.map((keys, textIndex) => {
-			if (index !== textIndex)
-				return keys;
-			return { ...keys, desc: evt.target.value };
+			return { ...keys, [evt.target.name]: evt.target.value };
 		});
 		this.setState({ params: newparams });
 	};
@@ -86,7 +62,6 @@ class DashBoard extends Component {
 			params: this.state.params.concat([{ argument: "" }])
 		});
 	};
-
 	RemoveTextfield = idx => () => {
 		this.setState({
 			params: this.state.params.filter((s, sidx) => idx !== sidx)
@@ -134,27 +109,35 @@ class DashBoard extends Component {
 					}
 				})
 			}
-
-
 		}
-
 	}
 	onChangeHandle = (event) => {
-		this.setState({ [event.target.name]: event.target.value })
+		if (typeof event.target === 'undefined') {
+			if (event.editor.name == 'editor1') {
+				this.setState({
+					example: event.editor.getData()
+				});
+			} else {
+				this.setState({
+					output: event.editor.getData()
+				});
+			}
+		} else {
+				this.setState({ [event.target.name]: event.target.value });
+		}
 	}
 	submitHanlder = async () => {
-
-
-		let keywords = this.state.tags.split(',')
+		let keywords = this.state.tags.split(',');
+		const { functionName, tags, definition, syntax, example, output, params, functionType } = this.state;
 		let postBody = {
-			'functionName': this.state.functionName,
+			'functionName': functionName,
 			'keyword': keywords,
-			'definition': this.state.definition,
-			'syntax': this.state.syntax,
-			'example': this.state.example,
-			'output': this.state.output,
-			'param': this.state.params,
-			'type': "custom"
+			'definition': definition,
+			'syntax': syntax,
+			'example': example,
+			'output': output,
+			'param': params,
+			'type': functionType
 		}
 		try {
 			const response = await API.post('/api/user/post', postBody);
@@ -177,14 +160,9 @@ class DashBoard extends Component {
 		} catch (ex) {
 
 		}
-
 	}
 	render() {
-		console.log("datta >>>", this.state.errors)
-		const { functionNameError,
-			tagsError, definitionError,
-			syntaxError, outputError,
-			exampleError } = this.state.errors;
+		const { functionNameError, tagsError, definitionError, syntaxError, outputError, exampleError } = this.state.errors;
 		return (
 			<Fragment>
 				<Header />
@@ -208,6 +186,19 @@ class DashBoard extends Component {
 									value={this.state.functionName}
 								/>
 								{functionNameError !== '' ? (<h4 className="errorMsg">{functionNameError}</h4>) : null}
+								<div className='typebtn'>
+									<FormControl component="fieldset">
+										<FormLabel component="legend"> Funtion Type</FormLabel>
+										<RadioGroup aria-label="type"
+											name="functionType"
+											className='typebtn'
+											value={this.state.functionType}
+											onChange={this.onChangeHandle}>
+											<FormControlLabel value="Predefined" control={<Radio />} label="Predefined" />
+											<FormControlLabel value="Custom" control={<Radio />} label="Custom" />
+										</RadioGroup>
+									</FormControl>
+								</div>
 								<TextField required
 									label="Tags"
 									onChange={this.onChangeHandle}
@@ -220,7 +211,6 @@ class DashBoard extends Component {
 									className='margin'
 								/>
 								{tagsError !== '' ? (<h4 className="errorMsg">{tagsError}</h4>) : null}
-
 								<TextField
 									onChange={this.onChangeHandle}
 									rows={7}
@@ -262,12 +252,14 @@ class DashBoard extends Component {
 										<TextField className="paramTex1"
 											placeholder={`Arguments #${index + 1}`}
 											value={element.argument}
-											onChange={this.handleAddTextfield1(index)}
+											name="argument"
+											onChange={this.handleAddTextfield(index)}
 										/>
 										<TextField className="paramTex2"
 											placeholder={`Discription #${index + 1}`}
+											name="desc"
 											value={element.desc}
-											onChange={this.handleAddTextfield2(index)}
+											onChange={this.handleAddTextfield(index)}
 										/>
 										<button
 											type="button"
@@ -282,16 +274,19 @@ class DashBoard extends Component {
 									<b> Example </b>
 								</span>
 								<CKEditor
-									onChange={this.onExampleEditorChange} />
+									name="example"
+									data={this.state.example}
+									onChange={this.onChangeHandle}
+								/>
 								{exampleError !== '' ? (<h4 className="errorMsg">{exampleError}</h4>) : null}
-
 								<br />
 								<span className='editorText'>
 									<b> Output </b>
 								</span>
 								<CKEditor
-									onChange={this.onOutputEditorChange}
-
+									data={this.state.output}
+									name="output"
+									onChange={this.onChangeHandle}
 								/>
 								{outputError !== '' ? (<h4 className="errorMsg">{outputError}</h4>) : null}
 								<Button
@@ -307,18 +302,12 @@ class DashBoard extends Component {
 							</form>
 							<ToastContainer />
 						</div>
-
 					</Grid>
 					<Grid item xs={12} md={3}>
 					</Grid>
-
-
 				</Grid>
 			</Fragment>
-
-
 		)
 	}
 }
 export default DashBoard;
-
