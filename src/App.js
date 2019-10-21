@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import {PrivateRoute} from './utils';
 const Login = lazy(() => import('./components/login'));
 const Dashboard = lazy(() => import('./components/dashboard'));
-
+const Admindashboard = lazy(() => import('./components/admin/dashboard'))
 
 function App() {
   return (
@@ -12,6 +12,7 @@ function App() {
         <Switch>
           <Route exact path='/' component={Login} />
           <PrivateRoute path='/dashboard' component={Dashboard} />
+          <PrivateRoute path='/admin' component={Admindashboard} />
           <Route render={() => { return (<h4>Page not found</h4>) }} />
         </Switch>
       </Suspense>

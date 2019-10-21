@@ -84,6 +84,9 @@ export default function Login(props) {
 				localStorage.removeItem("authToken");
 				setIsError(true);
 				setError(response.data.message);
+			}else if(response.data.role && response.data.role === "admin"){
+				localStorage.setItem("authToken",response.data.token);
+				props.history.push('/admin')
 			}else {
 				localStorage.setItem("authToken",response.data.token);
 				props.history.push('/dashboard')
