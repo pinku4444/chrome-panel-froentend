@@ -113,7 +113,7 @@ class DashBoard extends Component {
 	}
 	onChangeHandle = (event) => {
 		if (typeof event.target === 'undefined') {
-			if (event.editor.name == 'editor1') {
+			if (event.editor.name === 'editor1') {
 				this.setState({
 					example: event.editor.getData()
 				});
@@ -123,44 +123,47 @@ class DashBoard extends Component {
 				});
 			}
 		} else {
-				this.setState({ [event.target.name]: event.target.value });
+			this.setState({ [event.target.name]: event.target.value });
 		}
 	}
 	submitHanlder = async () => {
-		let keywords = this.state.tags.split(',');
-		const { functionName, tags, definition, syntax, example, output, params, functionType } = this.state;
+		let keywords = this.state.tags.split(",");
 		let postBody = {
-			'functionName': functionName,
-			'keyword': keywords,
-			'definition': definition,
-			'syntax': syntax,
-			'example': example,
-			'output': output,
-			'param': params,
-			'type': functionType
-		}
+			functionName: this.state.functionName,
+			keyword: keywords,
+			definition: this.state.definition,
+			syntax: this.state.syntax,
+			example: this.state.example,
+			output: this.state.output,
+			param: this.state.params,
+			type: "custom"
+		};
 		try {
-			const response = await API.post('/api/user/post', postBody);
-			console.log('response', response);
+			let headers = {
+				"Content-Type": "application/json",
+				authorization: localStorage.getItem("authToken")
+			};
+			const response = await API.post("/api/user/post", postBody, {
+				headers: headers
+			});
+			console.log("response", response);
 			if (response.data.code !== 200) {
-				toast.error(response.data.message)
+				toast.error(response.data.message);
 			} else {
 				this.setState({
-					'functionName': '',
-					'tags': '',
-					'definition': '',
-					'syntax': '',
-					'example': '',
-					'output': '',
-					'globalError': '',
-					'params': [],
+					functionName: "",
+					tags: "",
+					definition: "",
+					syntax: "",
+					example: "",
+					output: "",
+					globalError: "",
+					params: []
 				});
-				toast.success("Function added successfully")
+				toast.success("Function added successfully");
 			}
-		} catch (ex) {
-
-		}
-	}
+		} catch (ex) { }
+	};
 	render() {
 		const { functionNameError, tagsError, definitionError, syntaxError, outputError, exampleError } = this.state.errors;
 		return (
