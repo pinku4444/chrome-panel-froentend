@@ -1,8 +1,19 @@
 .loading {
-    text-align: center;
-    margin: 10px;
+  text-align: center;
+  margin: 10px;
 }
 
 .paper {
-    margin: 20px;
+  margin: 20px;
+}
+
+.actionButton {
+  margin-right: 10px !important;
+}
+
+.MuiFab-root {
+  width: 45px !important;
+  height: 45px !important;
+  padding: 11px !important;
+  margin-right: 10px !important;
 }
