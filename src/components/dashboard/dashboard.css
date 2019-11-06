@@ -1,94 +1,92 @@
 .App {
-    text-align: center;
-    
-  }
-  div#root{
-    background-size:cover;
-    /* background-image: url(/src/assests/image/b13.jpeg); */
-  }
-  .editorText{
-    text-align: initial;
-  
-  }
-  image{
-    width: 500px;
-  }
-  
-  .App-logo {
-    height: 40vmin;
-  }
-  h4{
-    margin: 0px;
-  }
-  .errorMsg {
-    color: red;
+  text-align: center;
+}
+div#root {
+  background-size: cover;
+  /* background-image: url(/src/assests/image/b13.jpeg); */
+}
+.editorText {
+  text-align: initial;
+}
+image {
+  width: 500px;
+}
 
-  }
-  Paper {
-    padding: 10px;;
-  }
-  
-  .App-header {
-    background-color: #282c34;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    /* color: white; */
-  }
-  .addParambtn{
-    text-align:left; 
-    margin-left: 10px;
-  }
-  .addFeb{
-    text-size-adjust: 10px;
-  }
-  .MuiButtonBase-root{
-    text-align:right;
-  }
-  
-  .App-link {
-    color: #09d3ac;
-  }
-  .examples{
-    width: 150px;
-  }
-  .form{
-    display: inline-grid;
-    }
-  .inputs {
-    margin: 5px 0;
-    padding: 10px;
-    border: 2px solid #000;
-  }
-  .param{
+.App-logo {
+  height: 40vmin;
+}
+h4 {
+  margin: 0px;
+}
+.errorMsg {
+  color: red;
+}
+Paper {
+  padding: 10px;
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
   display: flex;
-  flex: column; 
-  }
-  .removeBtn{
-    height: 30px;
-    background-color:cornsilk;
-  }
-   .btn{
-    box-shadow: inset -2px -3px 16px 0px black;  
-  }
-  .paramTex1{
-    width: 200px;  
-  }
-  .paramTex2{
-    width: 350px;
-  } 
-  .addbtn{
-    text-align:left; 
-  }
-  .typebtn{
-    display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  /* color: white; */
+}
+.addParambtn {
+  text-align: left;
+  margin-left: 10px;
+}
+.addFeb {
+  text-size-adjust: 10px;
+}
+.MuiButtonBase-root {
+  text-align: right;
+}
+
+.App-link {
+  color: #09d3ac;
+}
+.examples {
+  width: 150px;
+}
+.form {
+  display: inline-grid;
+}
+.inputs {
+  margin: 5px 0;
+  padding: 10px;
+  border: 2px solid #000;
+}
+.param {
+  display: flex;
+  justify-content: space-between;
+}
+.removeBtn {
+  height: 30px;
+  background-color: cornsilk;
+}
+.btn {
+  box-shadow: inset -2px -3px 16px 0px black;
+}
+.paramTex1 {
+  width: 150px;
+}
+.paramTex2 {
+  width: 340px;
+  margin-left: 10px !important;
+}
+.addbtn {
+  text-align: left;
+}
+.typebtn {
+  display: flex;
   flex-direction: column;
   margin-top: 10px;
-  }
-  /* .MuiFormControl-root{
+}
+/* .MuiFormControl-root{
     display: inline-flex;
     position: relative;
     margin-top: 2px;
