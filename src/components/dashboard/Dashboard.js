@@ -32,7 +32,6 @@ class DashBoard extends Component {
       example: yup.string().required("example is required"),
       output: yup.string().required("output is required")
     });
-    console.log(props, 'wdwdw-------->');
     this.state = {
       functionName: (typeof props.functionData !== 'undefined') ? props.functionData.functionName : '',
       tags: (typeof props.functionData !== 'undefined') ? props.functionData.keyword.join(',') : '',
@@ -49,6 +48,8 @@ class DashBoard extends Component {
         'exampleError': '',
         'outputError': ''
       },
+      'checkFunctionText' : 'Check Function Exist or not',
+      'checkFunctionTextColor' : 'black',
       params: (typeof props.functionData !== 'undefined') ? props.functionData.param : [],
       'functionType': (typeof props.functionData !== 'undefined') ? props.functionData.type : 'Predefined',
       'isPropsData': (typeof props.functionData !== 'undefined') ? true : false,
@@ -122,6 +123,12 @@ class DashBoard extends Component {
     }
   }
   onChangeHandle = (name) => (event) => {
+    if(name === 'functionName') {
+      this.setState({
+        'checkFunctionText' : 'Check Function Exist or not',
+        'checkFunctionTextColor' : 'black'
+      })
+    }
     if (name === 'example' || name === 'output') {
       this.setState({
         [name]: event.editor.getData()
@@ -129,9 +136,6 @@ class DashBoard extends Component {
     } else {
       this.setState({ [event.target.name]: event.target.value });
     }
-    // this.setState({
-    //   [name]: (event.editor && event.editor.getData()) || event.target.value
-    // });
   }
 
   functionUpdateHandler = async () => {
@@ -169,6 +173,36 @@ class DashBoard extends Component {
     }
   }
 
+  checkFunctionExistOrNot = async () => {
+    this.setState({
+      'checkFunctionText' : 'Checking ...',
+      'checkFunctionTextColor' : 'black'
+    });
+
+    let postBody = {
+      "functionName" : this.state.functionName
+    };
+
+    let headers = {
+      "Content-Type": "application/json",
+       authorization: localStorage.getItem("authToken")
+    };
+    try {
+      const response = await API.post("/api/user/checkFunction", postBody, {
+        headers: headers
+      });
+      this.setState({
+        'checkFunctionText' : response.data.message,
+        'checkFunctionTextColor' : response.data.message === 'function does not exist' ? 'green' : 'red'
+      })
+    }catch(ex) {
+
+    }
+    
+
+
+  }
+
   submitHanlder = async () => {
     let keywords = this.state.tags.split(",");
     let postBody = {
@@ -202,21 +236,21 @@ class DashBoard extends Component {
           output: "",
           globalError: "",
           params: [],
-          functionType : "Predefined"
+          functionType: "Predefined"
         });
         toast.success("Function added successfully");
       }
     } catch (ex) { }
   };
   render() {
-    const { functionNameError, tagsError, definitionError, syntaxError, outputError, exampleError } = this.state.errors;
+    const {functionNameError, tagsError, definitionError, syntaxError, outputError, exampleError } = this.state.errors;
     return (
       <Fragment>
         {/* <Header /> */}
         <Grid container spacing={3}>
-          <Grid item xs={12} md={3}>
+          <Grid item xs={12} sm={3}>
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} sm={6}>
             <div>
               <form className="form"  >
                 <TextField
@@ -308,7 +342,7 @@ class DashBoard extends Component {
                       value={element.description}
                       onChange={this.handleAddTextfield(index)}
                     />
-                     <IconButton
+                    <IconButton
                       aria-label="delete">
                       <DeleteIcon
                         color="secondary"
@@ -361,7 +395,10 @@ class DashBoard extends Component {
               <ToastContainer />
             </div>
           </Grid>
-          <Grid item xs={12} md={3}>
+          <Grid item xs={12} sm={3}>
+            <Button variant="contained"  className="margin-10" onClick={this.checkFunctionExistOrNot} >
+              <span className={this.state.checkFunctionTextColor} >{this.state.checkFunctionText}</span>
+            </Button>
           </Grid>
         </Grid>
       </Fragment>

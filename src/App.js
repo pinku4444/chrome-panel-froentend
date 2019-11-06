@@ -2,7 +2,6 @@ import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import {PrivateRoute} from './utils';
 const Login = lazy(() => import('./components/login'));
-const Dashboard = lazy(() => import('./components/dashboard'));
 const Dashboardcomponent = lazy(() => import('./components/dashboardComponent'));
 const Admindashboard = lazy(() => import('./components/admin/dashboard'))
 
