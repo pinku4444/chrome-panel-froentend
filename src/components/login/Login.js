@@ -49,7 +49,7 @@ export default function Login(props) {
 
 	let schema = yup.object().shape({
 		email : yup.string().email('please enter valid email').required(),
-		password : yup.string().required("password is required").min(2, 'Please enter no more than 2 characters'),
+		password : yup.string().required("password is required").min(2, 'Please enter  more than 2 characters'),
 
 	});
 
