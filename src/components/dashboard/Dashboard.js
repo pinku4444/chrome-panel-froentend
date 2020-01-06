@@ -1,266 +1,408 @@
-import React, { Component } from 'react'
-import { stat } from 'fs';
+import React, { Component, Fragment } from 'react'
 import CKEditor from 'ckeditor4-react';
-import PropTypes from 'prop-types';
 import './dashboard.css';
-import TextareaAutosize from '@material-ui/core/TextareaAutosize';
-import { makeStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import SaveIcon from '@material-ui/icons/Save';
 import Button from '@material-ui/core/Button';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
-import Link from '@material-ui/core/Link';
-import Grid from '@material-ui/core/Grid';
 import { API } from '../../utils';
-
+import * as yup from 'yup';
+import Grid from '@material-ui/core/Grid';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Header from '../header';
+import FormControl from '@material-ui/core/FormControl';
+import FormLabel from '@material-ui/core/FormLabel';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Radio from '@material-ui/core/Radio';
+import RadioGroup from '@material-ui/core/RadioGroup';
+import { withRouter } from 'react-router-dom'
+import IconButton from '@material-ui/core/IconButton';
+import DeleteIcon from '@material-ui/icons/Delete';
 
 class DashBoard extends Component {
-	constructor(props) {
-		super(props);
-		this.state = {
-			'functionName': '',
-			'tags': '',
-			'definition': '',
-			'syntax': '',
-			'example': '',
-			'output': '',
-			'errorMsg': '',
-			'formIsValid': true,
-			'params': [],
-		}
+  constructor(props) {
+    super(props);
+    this.schema = yup.object().shape({
+      functionName: yup.string().required("Function name is required"),
+      tags: yup.string().required("Tags is required"),
+      definition: yup.string().required("Definition is required"),
+      syntax: yup.string().required("Syntax is required"),
+      example: yup.string().required("example is required"),
+      output: yup.string().required("output is required")
+    });
+    this.state = {
+      functionName: (typeof props.functionData !== 'undefined') ? props.functionData.functionName : '',
+      tags: (typeof props.functionData !== 'undefined') ? props.functionData.keyword.join(',') : '',
+      definition: (typeof props.functionData !== 'undefined') ? props.functionData.description[0].definition : '',
+      syntax: (typeof props.functionData !== 'undefined') ? props.functionData.description[0].syntax : '',
+      example: (typeof props.functionData !== 'undefined') ? props.functionData.examples[0].example : '',
+      output: (typeof props.functionData !== 'undefined') ? props.functionData.examples[0].output : '',
+      'globalError': '',
+      'errors': {
+        'functionNameError': '',
+        'tagsError': '',
+        'definitionError': '',
+        'syntaxError': '',
+        'exampleError': '',
+        'outputError': ''
+      },
+      'checkFunctionText' : 'Check Function Exist or not',
+      'checkFunctionTextColor' : 'black',
+      params: (typeof props.functionData !== 'undefined') ? props.functionData.param : [],
+      'functionType': (typeof props.functionData !== 'undefined') ? props.functionData.type : 'Predefined',
+      'isPropsData': (typeof props.functionData !== 'undefined') ? true : false,
+      'updateFunctionId': (typeof props.functionId !== 'undefined') ? props.functionId : '',
+    }
+  }
+  handleAddTextfield = index => evt => {
+    const newparams = this.state.params.map((keys, textIndex) => {
+      if (index !== textIndex)
+        return keys;
+      return { ...keys, [evt.target.name]: evt.target.value };
+    });
+    this.setState({ params: newparams });
+  };
+  AddTextfield = () => {
+    this.setState({
+      params: this.state.params.concat([{ argument: "" }])
+    });
+  };
+  RemoveTextfield = idx => () => {
+    this.setState({
+      params: this.state.params.filter((s, sidx) => idx !== sidx)
+    });
+  };
+  handleValidation = async (event) => {
+    event.preventDefault();
+    const { functionName, tags, definition, syntax, example, output } = this.state;
+    let dataWithNoError = {
+      'functionNameError': '',
+      'tagsError': '',
+      'definitionError': '',
+      'syntaxError': '',
+      'exampleError': '',
+      'outputError': ''
+    }
+    try {
+      this.setState({
+        errors: {
+          ...dataWithNoError
+        }
+      })
+      const data = {
+        functionName,
+        tags,
+        definition,
+        syntax,
+        example,
+        output
+      };
+      const formData = await this.schema.validate(data, { abortEarly: false, stripUnknown: true });
+      if (this.state.isPropsData) {
+        this.functionUpdateHandler();
+      } else {
+        this.submitHanlder();
+      }
+    } catch (ValidationError) {
+      console.log("errors", ValidationError);
+      if (ValidationError.inner !== undefined) {
+        const errors = ValidationError.inner;
+        errors.map((error) => {
+          let key = `${[error.path]}Error`;
+          console.log('key: ', key);
+          dataWithNoError = { ...dataWithNoError, [key]: error.message }
+        });
+        this.setState({
+          errors: {
+            ...dataWithNoError
+          }
+        })
+      }
+    }
+  }
+  onChangeHandle = (name) => (event) => {
+    if(name === 'functionName') {
+      this.setState({
+        'checkFunctionText' : 'Check Function Exist or not',
+        'checkFunctionTextColor' : 'black'
+      })
+    }
+    if (name === 'example' || name === 'output') {
+      this.setState({
+        [name]: event.editor.getData()
+      });
+    } else {
+      this.setState({ [event.target.name]: event.target.value });
+    }
+  }
 
-	}
-	onEditorChange = (evt) => {
-		this.setState({
-			example: evt.editor.getData()
-		});
-	}
-	onEditorChangeOutput = (evt) => {
-		this.setState({
-			output: evt.editor.getData()
-		});
-	}
+  functionUpdateHandler = async () => {
+    let { functionName, functionType, definition, syntax, example, output, params, updateFunctionId } = this.state;
+    let keywords = this.state.tags.split(",");
+    let postBody = {
+      'id': updateFunctionId,
+      'data': {
+        functionName: functionName,
+        keyword: keywords,
+        definition: definition,
+        syntax: syntax,
+        example: example,
+        output: output,
+        param: params,
+        type: functionType
+      }
+    };
+    try {
+      let headers = {
+        "Content-Type": "application/json",
+        authorization: localStorage.getItem("authToken")
+      };
+      const response = await API.post("/api/user/updateFunction", postBody, {
+        headers: headers
+      });
+      if (response.status == 200) {
+        toast.success("Function Updated");
+        this.props.history.push('/admin');
+      } else {
+        toast.error("Something Wrong");
+      }
+    } catch (ex) {
 
-	handleChange(changeEvent) {
-		this.setState({
-			data: changeEvent.target.value
-		});
-	}
-	handleShareholderNameChange = idx => evt => {
-		const newShareholders = this.state.params.map((shareholder, sidx) => {
-			if (idx !== sidx) return shareholder;
-			return { ...shareholder, name1: evt.target.value };
-		});
+    }
+  }
 
-		this.setState({ params: newShareholders });
-	};
-	handleShareholderName2Change = idx => evt => {
-		const newShareholders = this.state.params.map((shareholder, sidx) => {
-			if (idx !== sidx) return shareholder;
-			return { ...shareholder, name2: evt.target.value };
-		});
+  checkFunctionExistOrNot = async () => {
+    this.setState({
+      'checkFunctionText' : 'Checking ...',
+      'checkFunctionTextColor' : 'black'
+    });
 
-		this.setState({ params: newShareholders });
-	};
+    let postBody = {
+      "functionName" : this.state.functionName
+    };
 
-	handleAddShareholder = () => {
-		this.setState({
-			params: this.state.params.concat([{ name1: "" }])
-		});
-	};
+    let headers = {
+      "Content-Type": "application/json",
+       authorization: localStorage.getItem("authToken")
+    };
+    try {
+      const response = await API.post("/api/user/checkFunction", postBody, {
+        headers: headers
+      });
+      this.setState({
+        'checkFunctionText' : response.data.message,
+        'checkFunctionTextColor' : response.data.message === 'function does not exist' ? 'green' : 'red'
+      })
+    }catch(ex) {
 
-	handleRemoveShareholder = idx => () => {
-		this.setState({
-			params: this.state.params.filter((s, sidx) => idx !== sidx)
-		});
-	};
-
-	handleValidation = (event) => {
-		event.preventDefault();
-		const functionName = this.state.functionName;
-		const tags = this.state.tags;
-		const definition = this.state.definition;
-		const syntax = this.state.syntax;
-		const example = this.state.example;
-		const output = this.state.output;
-		let errorMsg = '';
-		let formIsValid = true;
-
-		if (functionName == '') {
-			formIsValid = false;
-			errorMsg = " Function Name Cannot be empty";
-		} else if (tags === '') {
-			formIsValid = false;
-			errorMsg = " Tags Cannot be empty";
-		} else if (definition === '') {
-			formIsValid = false;
-			errorMsg = " definition Cannot be empty";
-		} else if (syntax === '') {
-			formIsValid = false;
-			errorMsg = " syntax Cannot be empty";
-		} else if (example === '') {
-			formIsValid = false;
-			errorMsg = " example Cannot be empty";
-		} else if (output === '') {
-			formIsValid = false;
-			errorMsg = " output Cannot be empty";
-		} else {
-			formIsValid = true;
-			errorMsg = "";
-		}
-		this.setState({ 'errorMsg': errorMsg, 'formIsValid': false }, () => {
-			this.submitHanlder();
-		});
-
-
-	}
-
-
-
-	onChangeHandle = (event) => {
-		this.setState({ [event.target.name]: event.target.value })
-	}
-	submitHanlder = () => {
-		const { formIsValid, errorMsg } = this.state;
-		console.log('checked::::::', this.state);
-		if (formIsValid) {
-			try {
-
-			}catch(ex) {
-				
-			}
-		} else {
-			alert("Form has errors." + errorMsg);
-
-		}
-	}
-
-	render() {
-		console.log('props:::::::', this.state);
-		console.log('props data:::::::', this.state.data);
-
-		return (
-			<div className="App">
-				<form className="form"  >
-					<TextField
-						required="true"
-						onChange={this.onChangeHandle}
-						label="Function Name"
-						placeholder="array.join()"
-						defaultValue=""
-						margin="normal"
-						variant="outlined"
-						name="functionName"
-						id="functionName"
-						autoComplete="functionName"
-						autoFocus
-					/>
-					{/* <p item xs>              
-               Multiple Keys separated by comma (,)
-                 </p>             */}
-					<TextField required
-						label="Tags and Multiple Tags separated by comma (,)"
-						onChange={this.onChangeHandle}
-						placeholder="join"
-						defaultValue=""
-						margin="normal"
-						variant="outlined"
-						name="tags"
-					/>
-					<TextareaAutosize
-						className="textarea"
-						onChange={this.onChangeHandle}
-						rows={7}
-						rowsMax={7}
-						// aria-label="maximum height"
-						label="Definition"
-						placeholder=" DEFINITION=  The join() method returns the array as a string."
-						// variant="outlined"
-						defaultValue=""
-						name="definition"
-					/>
-					<TextField required
-						onChange={this.onChangeHandle}
-						label="Syntax"
-						defaultValue=""
-						placeholder="array.join(separator)"
-						margin="normal"
-						variant="outlined"
-						name="syntax"
-					/>
-					{/* <button
-            type="button"
-            onClick={this.handleAddShareholder}
-            className="small"
-          > Add parameters
-           </button><br></br> */}
+    }
+    
 
 
-					<span className='addbtn1'>
-						<Fab
-							color="primary"
-							aria-label="add"
-							onClick={this.handleAddShareholder}
-							className="addbtn1"
-						>
-							<AddIcon />
-						</Fab>
-						<span className='addbtn'> <b> Add parameters  </b>
-						</span>
-					</span>
+  }
 
+  submitHanlder = async () => {
+    let keywords = this.state.tags.split(",");
+    let postBody = {
+      functionName: this.state.functionName,
+      keyword: keywords,
+      definition: this.state.definition,
+      syntax: this.state.syntax,
+      example: this.state.example,
+      output: this.state.output,
+      param: this.state.params,
+      type: this.state.functionType
+    };
+    try {
+      let headers = {
+        "Content-Type": "application/json",
+        authorization: localStorage.getItem("authToken")
+      };
+      const response = await API.post("/api/user/post", postBody, {
+        headers: headers
+      });
+      console.log("response", response);
+      if (response.data.code !== 200) {
+        toast.error(response.data.message);
+      } else {
+        this.setState({
+          functionName: "",
+          tags: "",
+          definition: "",
+          syntax: "",
+          example: "",
+          output: "",
+          globalError: "",
+          params: [],
+          functionType: "Predefined"
+        });
+        toast.success("Function added successfully");
+      }
+    } catch (ex) { }
+  };
+  render() {
+    const {functionNameError, tagsError, definitionError, syntaxError, outputError, exampleError } = this.state.errors;
+    return (
+      <Fragment>
+        {/* <Header /> */}
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={3}>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <div>
+              <form className="form"  >
+                <TextField
+                  required="true"
+                  onChange={this.onChangeHandle("functionName")}
+                  label="Function Name"
+                  placeholder="array.join()"
+                  margin="normal"
+                  variant="outlined"
+                  name="functionName"
+                  id="functionName"
+                  autoComplete="functionName"
+                  autoFocus
+                  value={this.state.functionName}
+                />
+                {functionNameError !== '' ? (<h4 className="errorMsg">{functionNameError}</h4>) : null}
+                <div className='typebtn'>
+                  <FormControl component="fieldset">
+                    <FormLabel component="legend"> Funtion Type</FormLabel>
+                    <RadioGroup aria-label="type"
+                      name="functionType"
+                      className='typebtn'
+                      value={this.state.functionType}
+                      onChange={this.onChangeHandle("functionType")}>
+                      <FormControlLabel value="Predefined" control={<Radio />} label="Predefined" />
+                      <FormControlLabel value="Custom" control={<Radio />} label="Custom" />
+                    </RadioGroup>
+                  </FormControl>
+                </div>
+                <TextField required
+                  label="Tags"
+                  onChange={this.onChangeHandle("tags")}
+                  placeholder="Tags separated by comma for example : join,array"
+                  value={this.state.tags}
+                  margin="dense"
+                  variant="outlined"
+                  name="tags"
+                  id="mui-theme-provider-outlined-input"
+                  className='margin'
+                />
+                {tagsError !== '' ? (<h4 className="errorMsg">{tagsError}</h4>) : null}
+                <TextField
+                  onChange={this.onChangeHandle("definition")}
+                  rows={7}
+                  rowsMax={7}
+                  label="Definition"
+                  variant="outlined"
+                  placeholder=" DEFINITION=  The join() method returns the array as a string."
+                  value={this.state.definition}
+                  margin="normal"
+                  name="definition"
+                />
+                {definitionError !== '' ? (<h4 className="errorMsg">{definitionError}</h4>) : null}
+                <TextField required
+                  onChange={this.onChangeHandle("syntax")}
+                  label="Syntax"
+                  value={this.state.syntax}
+                  placeholder="array.join(separator)"
+                  margin="normal"
+                  variant="outlined"
+                  name="syntax"
+                />
+                {syntaxError !== '' ? (<h4 className="errorMsg">{syntaxError}</h4>) : null}
+                <span className='addbtn'>
+                  <Fab
+                    color="primary"
+                    aria-label="add"
+                    size="small"
+                    onClick={this.AddTextfield}
+                    className="addFeb"
+                  >
+                    <AddIcon />
+                  </Fab>
+                  <span className='addParambtn'>
+                    <b> Add parameters  </b>
+                  </span>
+                </span>
+                {this.state.params.map((element, index) => (
+                  <div className="params">
+                    <TextField className="paramTex1"
+                      placeholder={`Arguments #${index + 1}`}
+                      value={element.argument}
+                      name="argument"
+                      onChange={this.handleAddTextfield(index)}
+                    />
+                    <TextField className="paramTex2"
+                      placeholder={`Discription #${index + 1}`}
+                      name="description"
+                      value={element.description}
+                      onChange={this.handleAddTextfield(index)}
+                    />
+                    <IconButton
+                      aria-label="delete">
+                      <DeleteIcon
+                        color="secondary"
+                        onClick={this.RemoveTextfield(index)}
+                        className="removeBtn" />
+                    </IconButton>
 
-					{this.state.params.map((shareholder, idx) => (
-						<div className="shareholder">
-							<TextField className="tex1"
-								placeholder={`Arguments #${idx + 1}`}
-								value={shareholder.name1}
-								onChange={this.handleShareholderNameChange(idx)}
-							/>
-							<TextField className="tex2"
-								placeholder={`Discription #${idx + 1}`}
-								value={shareholder.name2}
-								onChange={this.handleShareholderName2Change(idx)}
-							/>
-							<button
-								type="button"
-								onClick={this.handleRemoveShareholder(idx)}
-								className="small1"
-							>
-								-
-							</button>
-						</div>
-					))}<br />
-					<span className='exText'><b> Example </b></span><CKEditor
-						// data={this.state.data}
-						onChange={this.onEditorChange} ></CKEditor>
-					<br />
-					<span className='exText'>
-						<b> Output </b>
-					</span>
-					<CKEditor onChange={this.onEditorChangeOutput} />
+                  </div>
+                ))}<br />
+                <span className='editorText'>
+                  <b> Example </b>
+                </span>
+                <CKEditor
+                  name="example"
+                  data={this.state.example}
+                  onChange={this.onChangeHandle("example")}
+                />
+                {exampleError !== '' ? (<h4 className="errorMsg">{exampleError}</h4>) : null}
+                <br />
+                <span className='editorText'>
+                  <b> Output </b>
+                </span>
+                <CKEditor
+                  data={this.state.output}
+                  name="output"
+                  onChange={this.onChangeHandle("output")}
+                />
+                {outputError !== '' ? (<h4 className="errorMsg">{outputError}</h4>) : null}
+                {this.state.isPropsData ? <Button
+                  className="btn"
+                  variant="contained"
+                  onClick={this.handleValidation}
+                  size="large"
+                  color="primary"
+                  startIcon={<SaveIcon />}
+                >
+                  Update
+         					</Button> : <Button
+                    className="btn"
+                    variant="contained"
+                    onClick={this.handleValidation}
+                    size="large"
+                    color="primary"
+                    startIcon={<SaveIcon />}
+                  >
+                    Save
+         					</Button>}
 
-
-					< Button
-						className="btn"
-						variant="contained"
-						onClick={this.handleValidation}
-						size="large"
-						color="primary"
-						startIcon={<SaveIcon />}>
-						Save
-          </Button>
-				</form>
-
-
-
-
-			</div>
-		)
-	}
+              </form>
+              <ToastContainer />
+            </div>
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <Button variant="contained"  className="margin-10" onClick={this.checkFunctionExistOrNot} >
+              <span className={this.state.checkFunctionTextColor} >{this.state.checkFunctionText}</span>
+            </Button>
+          </Grid>
+        </Grid>
+      </Fragment>
+    )
+  }
 }
-
-
-export default DashBoard;
-
+export default withRouter(DashBoard)
